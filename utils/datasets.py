@@ -698,7 +698,8 @@ def load_image(self, i):
             path = self.img_files[i]
             # im = cv2.imread(path)  # BGR
             im, im_header = load(path)
-            # im = im[..., np.newaxis]
+            im = np.rot90(im, k=-1)
+            im = (normalize(im) * 255).astype(np.uint8)
             im = np.stack((im,) * 3, axis=-1)
             assert im is not None, f'Image Not Found {path}'
         h0, w0 = im.shape[:2]  # orig hw
@@ -709,6 +710,19 @@ def load_image(self, i):
         return im, (h0, w0), im.shape[:2]  # im, hw_original, hw_resized
     else:
         return self.imgs[i], self.img_hw0[i], self.img_hw[i]  # im, hw_original, hw_resized
+
+
+def normalize(x, x_min=None, x_max=None):
+    if x_min is None:
+        x_min = x.min()
+
+    if x_max is None:
+        x_max = x.max()
+
+    if x_min == x_max:
+        return x * 0
+    else:
+        return (x - x.min()) / (x.max() - x.min())
 
 
 def load_mosaic(self, index):
